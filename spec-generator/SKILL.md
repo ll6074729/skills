@@ -37,53 +37,95 @@ flowchart LR
 
 ### 阶段一：动态技术栈确认流程
 
-**设计理念**：本阶段不预设固定技术选项，而是通过「项目技术栈预检 → 实时网络检索 → 动态生成选项 → 用户确认」的循环与用户共同确定适用技术。这体现了适应性学习而非简单的预设匹配，特别针对后端等可能存在知识盲区的领域，建立动态学习和信息检索机制。
+**设计理念**：本阶段不预设固定技术选项，而是通过「项目类型确认 → 项目技术栈预检 → 实时网络检索 → 动态生成选项 → 用户确认」的循环与用户共同确定适用技术。这体现了适应性学习而非简单的预设匹配，特别针对后端等可能存在知识盲区的领域，建立动态学习和信息检索机制。
 
 **强制要求**：
 
 1. 禁止使用硬编码的固定技术选项列表
-2. **每次执行必须先读取项目已有技术栈**（预检步骤，不可跳过）
-3. 每轮询问前必须通过`WebSearch`检索当前主流技术方案
-4. 每次`AskUserQuestion`询问必须提供至少 3 个选项
-5. 用户始终可通过「Other」自定义输入（`AskUserQuestion`工具内置支持）
-6. 禁止在未完成技术栈确认前进入阶段二
+2. **必须先确认项目类型**（全栈/仅前端/仅后端），项目类型决定后续所有维度询问和规范生成范围
+3. **每次执行必须先读取项目已有技术栈**（预检步骤，不可跳过）
+4. 每轮询问前必须通过`WebSearch`检索当前主流技术方案
+5. 每次`AskUserQuestion`询问必须提供至少 3 个选项
+6. 用户始终可通过「Other」自定义输入（`AskUserQuestion`工具内置支持）
+7. 禁止在未完成技术栈确认前进入阶段二
 
-#### 1.0 项目技术栈预检（强制前置步骤）
+#### 1.0 前置：项目类型确认（强制第一步）
+
+**强制要求**：在任何预检和 WebSearch 检索之前，必须先通过`AskUserQuestion`询问用户项目类型。项目类型决定后续技术栈确认维度和规范生成范围。
+
+**项目类型定义**：
+
+| 项目类型 | 说明 | 适用的技术维度 | 生成的规范文件 |
+|----------|------|---------------|---------------|
+| 全栈项目 | 包含前端和后端的完整项目 | 全部维度（后端、前端、数据库、ORM、工程化、基础设施、框架组件） | 全部规范文件 |
+| 仅前端 | 纯前端项目，无后端和数据库 | 前端框架、前端工程化（构建工具、测试框架）、前端框架组件 | 跳过后端、数据库、ORM、缓存、数据权限相关规范 |
+| 仅后端 | 纯后端项目，无前端 UI | 后端语言与框架、数据库、ORM、后端工程化、基础设施 | 跳过前端 UI 相关规范 |
+
+**询问方式**：
+
+通过`AskUserQuestion`询问用户，提供以下选项：
+
+1. 全栈项目（推荐）- 包含前端和后端，生成完整规范体系
+2. 仅前端 - 纯前端项目，跳过数据库、后端、缓存等规范
+3. 仅后端 - 纯后端项目，跳过前端 UI 相关规范
+
+**项目类型对后续流程的影响**：
+
+- **技术栈预检**：根据项目类型过滤预检文件清单（如仅前端项目不检查`go.mod`、`pom.xml`等后端配置文件）
+- **维度询问**：根据项目类型跳过不适用的维度（如仅前端项目跳过数据库、ORM 维度）
+- **规范范围确认**：根据项目类型预选规则域（阶段三）
+- **规范文件生成**：根据项目类型跳过不适用的规范文件（阶段四）
+- **Skills 推荐**：根据项目类型过滤检索维度（阶段六）
+
+**项目类型与维度映射**：
+
+| 技术维度 | 全栈项目 | 仅前端 | 仅后端 |
+|----------|----------|--------|--------|
+| 后端语言与框架 | ✅ 必问 | ❌ 跳过 | ✅ 必问 |
+| 前端框架 | ✅ 必问 | ✅ 必问 | ❌ 跳过 |
+| 数据库 | ✅ 必问 | ❌ 跳过 | ✅ 必问 |
+| ORM/数据访问层 | ✅ 必问 | ❌ 跳过 | ✅ 必问 |
+| 工程化栈 | ✅ 必问 | ✅ 必问（前端工程化） | ✅ 必问（后端工程化） |
+| 基础设施与部署 | ✅ 必问 | ✅ 必问 | ✅ 必问 |
+| 框架内置组件体系 | ✅ 必问 | ✅ 必问（前端组件） | ✅ 必问（后端能力） |
+| 缓存方案 | ✅ 必问 | ❌ 跳过 | ✅ 必问 |
+
+#### 1.1 项目技术栈预检（强制前置步骤）
 
 **强制要求**：在开始任何 WebSearch 检索和用户询问前，必须先读取项目根目录及子目录的配置文件，识别项目已有的技术栈信息。
 
 **预检文件清单**：
 
-必须按以下顺序检查项目根目录及子目录是否存在以下文件，若存在则读取并提取技术栈信息：
+必须按以下顺序检查项目根目录及子目录是否存在以下文件，若存在则读取并提取技术栈信息。**根据 1.0 确认的项目类型，仅检查适用的文件**：
 
-| 文件 | 技术维度 | 提取内容 |
-|------|----------|----------|
-| `package.json` | 前端/后端/工程化 | `dependencies`、`devDependencies`中的框架、ORM、测试框架、构建工具 |
-| `go.mod` | 后端（Go） | Go 版本、依赖的框架（如 GoFrame、Gin、Echo 等） |
-| `pom.xml` | 后端（Java） | Java 版本、Spring Boot 版本、依赖的 ORM、测试框架 |
-| `build.gradle` | 后端（Java） | Java 版本、框架、ORM、测试框架 |
-| `requirements.txt` / `pyproject.toml` | 后端（Python） | Python 版本、框架（FastAPI、Django 等）、ORM、测试框架 |
-| `Cargo.toml` | 后端（Rust） | Rust 版本、框架、ORM |
-| `composer.json` | 后端（PHP） | PHP 版本、框架（Laravel、Symfony 等） |
-| `vite.config.*` | 前端构建 | 构建工具为 Vite，提取插件配置 |
-| `vue.config.*` | 前端框架 | 前端框架为 Vue |
-| `next.config.*` | 前端框架 | 前端框架为 Next.js |
-| `nuxt.config.*` | 前端框架 | 前端框架为 Nuxt |
-| `prisma/schema.prisma` | ORM | ORM 为 Prisma，提取数据库类型 |
-| `ormconfig.*` | ORM | ORM 为 TypeORM，提取数据库类型 |
-| `Dockerfile` / `docker-compose.yml` | 部署 | 部署方式为 Docker |
-| `.github/workflows/*.yml` | CI/CD | CI/CD 为 GitHub Actions |
-| `.gitlab-ci.yml` | CI/CD | CI/CD 为 GitLab CI |
-| `Makefile` / `make.cmd` | 开发工具 | 构建工具和命令 |
-| `pnpm-lock.yaml` / `yarn.lock` | 包管理器 | 包管理器为 pnpm 或 yarn |
-| `go.sum` | 包管理器 | Go modules |
+| 文件 | 技术维度 | 适用项目类型 | 提取内容 |
+|------|----------|-------------|----------|
+| `package.json` | 前端/后端/工程化 | 全部类型 | `dependencies`、`devDependencies`中的框架、ORM、测试框架、构建工具 |
+| `go.mod` | 后端（Go） | 全栈、仅后端 | Go 版本、依赖的框架（如 GoFrame、Gin、Echo 等） |
+| `pom.xml` | 后端（Java） | 全栈、仅后端 | Java 版本、Spring Boot 版本、依赖的 ORM、测试框架 |
+| `build.gradle` | 后端（Java） | 全栈、仅后端 | Java 版本、框架、ORM、测试框架 |
+| `requirements.txt` / `pyproject.toml` | 后端（Python） | 全栈、仅后端 | Python 版本、框架（FastAPI、Django 等）、ORM、测试框架 |
+| `Cargo.toml` | 后端（Rust） | 全栈、仅后端 | Rust 版本、框架、ORM |
+| `composer.json` | 后端（PHP） | 全栈、仅后端 | PHP 版本、框架（Laravel、Symfony 等） |
+| `vite.config.*` | 前端构建 | 全栈、仅前端 | 构建工具为 Vite，提取插件配置 |
+| `vue.config.*` | 前端框架 | 全栈、仅前端 | 前端框架为 Vue |
+| `next.config.*` | 前端框架 | 全栈、仅前端 | 前端框架为 Next.js |
+| `nuxt.config.*` | 前端框架 | 全栈、仅前端 | 前端框架为 Nuxt |
+| `prisma/schema.prisma` | ORM | 全栈、仅后端 | ORM 为 Prisma，提取数据库类型 |
+| `ormconfig.*` | ORM | 全栈、仅后端 | ORM 为 TypeORM，提取数据库类型 |
+| `Dockerfile` / `docker-compose.yml` | 部署 | 全部类型 | 部署方式为 Docker |
+| `.github/workflows/*.yml` | CI/CD | 全部类型 | CI/CD 为 GitHub Actions |
+| `.gitlab-ci.yml` | CI/CD | 全部类型 | CI/CD 为 GitLab CI |
+| `Makefile` / `make.cmd` | 开发工具 | 全部类型 | 构建工具和命令 |
+| `pnpm-lock.yaml` / `yarn.lock` | 包管理器 | 全部类型 | 包管理器为 pnpm 或 yarn |
+| `go.sum` | 包管理器 | 全栈、仅后端 | Go modules |
 
 **预检执行流程**：
 
-1. 使用`Glob`工具扫描项目根目录，检查上述文件是否存在
+1. 使用`Glob`工具扫描项目根目录，检查上述文件是否存在（仅检查与项目类型匹配的文件）
 2. 使用`Read`工具读取已存在的配置文件，提取技术栈信息
 3. 使用`LS`工具检查项目目录结构，推断技术栈（如`src/views/`暗示前端项目，`internal/`暗示 Go 项目）
-4. 整理「项目已有技术栈摘要」
+4. 整理「项目已有技术栈摘要」，摘要中必须标注项目类型
 
 **预检结果处理**：
 
@@ -102,6 +144,8 @@ flowchart LR
 **预检结果示例**：
 
 ```
+项目类型：全栈项目
+
 项目技术栈预检结果：
 
 - 后端框架：NestJS v10.x（来自 package.json）
@@ -114,6 +158,21 @@ flowchart LR
 - 部署方式：Docker（来自 Dockerfile）
 
 是否确认以上技术栈？未识别的维度（如 CI/CD、缓存方案）将进入动态询问流程。
+```
+
+若项目类型为「仅前端」，预检结果示例：
+
+```
+项目类型：仅前端
+
+项目技术栈预检结果：
+
+- 前端框架：Vue 3.x + Vben（来自 package.json + vite.config.ts）
+- 测试框架：Vitest（来自 package.json devDependencies）
+- 包管理器：pnpm（来自 pnpm-lock.yaml）
+- 构建工具：Vite（来自 vite.config.ts）
+
+是否确认以上技术栈？未识别的维度（如 CI/CD）将进入动态询问流程。
 ```
 
 **情况二：项目为空（无任何配置文件）**
@@ -132,17 +191,19 @@ flowchart LR
 2. **补充询问未识别部分**：对未识别的维度执行动态检索和用户询问
 3. **兼容性优先**：未识别维度的询问选项优先推荐与已识别技术栈兼容的方案
 
-#### 1.1 动态询问执行流程
+#### 1.2 动态询问执行流程
 
 ```mermaid
 flowchart TD
-    A[开始技术栈确认] --> B[项目技术栈预检]
+    A[开始技术栈确认] --> A0[确认项目类型]
+    A0 --> B[项目技术栈预检]
     B --> C{项目是否有已有技术栈?}
     C -->|是| D[复述确认已有技术栈]
     C -->|否| E[按完整动态流程执行]
     D --> F[仅对未识别维度执行动态询问]
     E --> F
-    F --> G[WebSearch 检索当前主流技术]
+    F --> F1{根据项目类型过滤适用维度}
+    F1 --> G[WebSearch 检索当前主流技术]
     G --> H[基于检索结果动态生成选项]
     H --> I[AskUserQuestion 询问用户]
     I --> J{用户是否确认?}
@@ -157,11 +218,11 @@ flowchart TD
     P --> Q[推荐参考项目]
 ```
 
-#### 1.2 技术栈确认维度
+#### 1.3 技术栈确认维度
 
-技术栈确认必须覆盖以下维度，每个维度的询问都必须先检索后询问：
+技术栈确认必须覆盖以下维度，每个维度的询问都必须先检索后询问。**根据 1.0 确认的项目类型，仅询问适用的维度，跳过不适用的维度**：
 
-**维度一：后端语言与框架**
+**维度一：后端语言与框架**（适用：全栈项目、仅后端）
 
 - **检索策略**：WebSearch 检索「most popular backend frameworks {当前年份}」「best backend frameworks {当前年份}」「backend framework comparison {当前年份}」
 - **检索目的**：获取当前主流后端框架清单、社区活跃度、企业采用率
@@ -172,43 +233,48 @@ flowchart TD
   - 各框架的学习曲线和社区支持
   - 各框架与前端框架的兼容性
 
-**维度二：前端框架**
+**维度二：前端框架**（适用：全栈项目、仅前端）
 
 - **检索策略**：WebSearch 检索「most popular frontend frameworks {当前年份}」「best frontend frameworks {当前年份}」「frontend framework comparison {当前年份}」
 - **检索目的**：获取当前主流前端框架清单、组件库生态、企业采用率
 - **动态生成选项**：基于检索结果，选择排名前 3-4 的框架作为选项
 
-**维度三：数据库**
+**维度三：数据库**（适用：全栈项目、仅后端）
 
 - **检索策略**：WebSearch 检索「most popular databases {当前年份}」「best databases for {项目类型} {当前年份}」
 - **检索目的**：获取当前主流数据库方案、适用场景、性能特点
 - **动态生成选项**：基于检索结果和项目定位，选择排名前 3-4 的数据库作为选项
 
-**维度四：ORM/数据访问层**
+**维度四：ORM/数据访问层**（适用：全栈项目、仅后端）
 
 - **检索策略**：WebSearch 检索「best ORM for {后端语言} {当前年份}」「{后端框架} ORM comparison {当前年份}」
 - **检索目的**：获取与已确定后端框架匹配的 ORM 方案
 - **动态生成选项**：基于检索结果和已确定的后端框架，选择排名前 3-4 的 ORM
 
-**维度五：工程化栈（包管理器、构建工具、测试框架）**
+**维度五：工程化栈（包管理器、构建工具、测试框架）**（适用：全部类型）
 
 - **检索策略**：WebSearch 检索「best {包管理器/构建工具/测试框架} for {技术栈} {当前年份}」
 - **检索目的**：获取与已确定技术栈匹配的工程化工具
 - **动态生成选项**：基于检索结果，每项选择排名前 3-4 的工具
+- **仅前端项目**：仅检索前端工程化工具（构建工具、前端测试框架）
+- **仅后端项目**：仅检索后端工程化工具（后端测试框架、后端构建工具）
 
-**维度六：基础设施与部署（部署方式、缓存方案、CI/CD）**
+**维度六：基础设施与部署（部署方式、缓存方案、CI/CD）**（适用：全栈项目、仅后端；仅前端项目仅询问部署和 CI/CD，跳过缓存方案）
 
 - **检索策略**：WebSearch 检索「best {部署/缓存/CICD} solutions {当前年份}」
 - **检索目的**：获取当前主流基础设施方案
 - **动态生成选项**：基于检索结果和项目定位，选择排名前 3-4 的方案
+- **仅前端项目**：跳过缓存方案，仅询问部署方式和 CI/CD
 
-**维度七：框架内置组件体系**
+**维度七：框架内置组件体系**（适用：全栈项目、仅前端、仅后端）
 
 - **检索策略**：WebSearch 检索「{前端框架名} built-in components」「{前端框架名} admin framework」「{后端框架名} built-in features」
 - **检索目的**：判断用户采用的框架是否包含完整内置组件库
 - **动态生成选项**：基于检索结果，列出框架的内置组件体系
+- **仅前端项目**：仅检索前端框架内置组件
+- **仅后端项目**：仅检索后端框架内置能力
 
-#### 1.3 开源项目推荐（强制）
+#### 1.4 开源项目推荐（强制）
 
 技术栈全部确认后，必须立即执行开源项目检索与推荐：
 
@@ -217,13 +283,15 @@ flowchart TD
 1. WebSearch 检索「{技术栈组合} open source project」「{前端框架}+{后端框架}+{数据库} example project github」
 2. WebSearch 检索「best {项目类型} open source {当前年份} github」
 3. WebSearch 检索「{技术栈} admin template github stars」
+4. WebSearch 检索「{技术栈} 开源项目 gitee」（补充检索 Gitee 平台）
 
 **推荐要求**：
 
-- 至少推荐 3 个采用相同技术组合的高质量开源项目
-- 每个项目必须标注：项目名、GitHub 地址、Star 数、技术栈、项目特点
+- **至少推荐 5 个**采用相同技术组合的高质量开源项目
+- 每个项目必须标注：项目名、GitHub 地址（若有）、Gitee 地址（若有）、Star 数、技术栈、项目特点
 - 优先推荐：Star 数高、近期活跃更新、文档完善、与用户技术栈匹配度高的项目
 - 若用户表示采用包含内置组件库的框架（如 vben），优先推荐使用该框架的开源项目作为参考
+- 同时检索 GitHub 和 Gitee 平台，国内项目可能在 Gitee 上有镜像
 
 **推荐格式**：
 
@@ -232,22 +300,77 @@ flowchart TD
 ```
 基于您确定的{技术栈}技术组合，检索到以下高质量开源项目：
 
-1. {项目名 1} - {GitHub 地址} - {Star 数}★
+1. {项目名 1} - {Star 数}★
+   GitHub：{GitHub 地址}
+   Gitee：{Gitee 地址}（若有）
    技术栈：{技术栈}
    特点：{项目特点}
 
-2. {项目名 2} - {GitHub 地址} - {Star 数}★
+2. {项目名 2} - {Star 数}★
+   GitHub：{GitHub 地址}
+   Gitee：{Gitee 地址}（若有）
    技术栈：{技术栈}
    特点：{项目特点}
 
-3. {项目名 3} - {GitHub 地址} - {Star 数}★
+3. {项目名 3} - {Star 数}★
+   GitHub：{GitHub 地址}
+   Gitee：{Gitee 地址}（若有）
    技术栈：{技术栈}
    特点：{项目特点}
 
-是否采用某个项目作为规范参考？
+4. {项目名 4} - {Star 数}★
+   GitHub：{GitHub 地址}
+   Gitee：{Gitee 地址}（若有）
+   技术栈：{技术栈}
+   特点：{项目特点}
+
+5. {项目名 5} - {Star 数}★
+   GitHub：{GitHub 地址}
+   Gitee：{Gitee 地址}（若有）
+   技术栈：{技术栈}
+   特点：{项目特点}
 ```
 
-#### 1.4 框架内置组件清单收集
+**选择后的拉取确认（强制）**：
+
+当用户选中某个参考项目后，必须向用户展示该项目的仓库地址，并询问是否拉取到本地进行深度分析：
+
+通过`AskUserQuestion`询问用户：
+
+```
+您已选择「{项目名}」作为规范参考项目。
+
+该项目的仓库地址：
+- GitHub：{GitHub 地址}
+- Gitee：{Gitee 地址}（若有）
+
+是否将该项目拉取到本地进行深度分析？
+
+选项：
+1. 拉取到本地（推荐）- 克隆到临时目录进行源码分析，提取组件使用约定和代码风格
+2. 仅通过 WebFetch 在线分析 - 在线获取仓库内容进行分析，不克隆到本地
+3. 不需要分析参考项目 - 跳过参考项目深度分析
+```
+
+**若用户选择「拉取到本地」**：
+
+1. 询问用户拉取位置（默认推荐临时目录，如`/tmp/spec-generator-reference/`）
+2. 询问用户从哪个平台拉取（GitHub 或 Gitee，若两个地址都存在）
+3. 使用`RunCommand`执行`git clone`命令拉取项目
+4. 拉取成功后进入阶段二的参考项目深度分析
+5. 若拉取失败（网络问题、权限问题等），降级为通过`WebFetch`在线分析
+
+**若用户选择「仅通过 WebFetch 在线分析」**：
+
+1. 使用`WebFetch`获取参考项目的 GitHub/Gitee 仓库页面内容
+2. 使用`WebFetch`获取参考项目的 README.md、AGENTS.md（若有）、.agents/rules/（若有）
+3. 在线分析结果进入阶段二的参考项目深度分析
+
+**若用户选择「不需要分析参考项目」**：
+
+跳过参考项目深度分析，直接进入阶段二的其他流程。
+
+#### 1.5 框架内置组件清单收集
 
 若用户在维度七中表示采用了包含内置组件库的框架，或用户选择了参考项目，必须进一步收集框架内置组件清单：
 
@@ -260,7 +383,7 @@ flowchart TD
 - 前端内置组件清单（表格、表单、弹窗、抽屉、操作列、上传下载、图标等）
 - 后端框架内置能力清单（依赖注入、守卫/拦截器、数据访问、异常处理、日志、配置等）
 
-#### 1.5 交互格式要求
+#### 1.6 交互格式要求
 
 每次`AskUserQuestion`询问必须满足以下格式要求：
 
@@ -286,7 +409,7 @@ flowchart TD
 （用户可选 Other 自定义输入）
 ```
 
-#### 1.6 动态学习与知识盲区应对
+#### 1.7 动态学习与知识盲区应对
 
 针对可能存在知识盲区的领域（如后端技术、特定框架生态等），必须建立动态学习机制：
 
@@ -312,7 +435,7 @@ flowchart TD
     I --> D
 ```
 
-#### 1.7 确认与记录
+#### 1.8 确认与记录
 
 技术栈确认完成后，必须：
 
@@ -397,21 +520,44 @@ flowchart TD
 
 ### 阶段三：确认规范范围与输出结构
 
-**强制要求**：在生成规范文档前，必须向用户确认规范的输出范围和文件结构。
+**强制要求**：在生成规范文档前，必须向用户确认规范的输出范围和文件结构。**根据阶段一确认的项目类型，预选适用规则域，跳过不适用的规则域**。
 
 通过`AskUserQuestion`询问以下内容：
 
 1. **输出位置**：规范文档生成到哪个目录？（默认推荐：项目根目录下`AGENTS.md`+`.agents/rules/`）
 2. **输出形式**：
-   - 完整版：`AGENTS.md`+所有规则文件（推荐）
+   - 完整版：`AGENTS.md`+所有适用规则文件（推荐）
    - 精简版：仅`AGENTS.md`顶层入口
    - 单文件版：合并为一个`项目规范.md`
-3. **规则域选择**：用户可勾选需要生成的规则域（默认全选）：
+3. **规则域选择**：根据项目类型预选，用户可调整：
+
+**全栈项目**（默认全选）：
    - `architecture.md` 架构设计
    - `api-contract.md` 接口契约
    - `backend.md` 后端实现
    - `database.md` 数据库
    - `frontend-ui.md` 前端 UI
+   - `data-permission.md` 数据权限（若项目涉及权限控制）
+   - `cache-consistency.md` 缓存一致性（若项目使用缓存）
+   - `dev-tooling.md` 开发工具
+   - `testing.md` 测试验证
+   - `workflow.md` 开发流程
+   - `documentation.md` 文档规范
+
+**仅前端项目**（跳过后端、数据库、缓存、数据权限）：
+   - `architecture.md` 架构设计
+   - `api-contract.md` 接口契约（若前端项目有 API 调用）
+   - `frontend-ui.md` 前端 UI
+   - `dev-tooling.md` 开发工具
+   - `testing.md` 测试验证
+   - `workflow.md` 开发流程
+   - `documentation.md` 文档规范
+
+**仅后端项目**（跳过前端 UI）：
+   - `architecture.md` 架构设计
+   - `api-contract.md` 接口契约
+   - `backend.md` 后端实现
+   - `database.md` 数据库
    - `data-permission.md` 数据权限（若项目涉及权限控制）
    - `cache-consistency.md` 缓存一致性（若项目使用缓存）
    - `dev-tooling.md` 开发工具
@@ -439,20 +585,37 @@ flowchart TD
 
 #### 4.2 生成顺序
 
-按以下顺序生成规范文件，每个文件生成后立即写入磁盘：
+按以下顺序生成规范文件，每个文件生成后立即写入磁盘。**根据项目类型跳过不适用的规范文件**：
 
-1. `AGENTS.md`（顶层入口）
-2. `.agents/rules/architecture.md`（架构设计）
-3. `.agents/rules/api-contract.md`（接口契约）
-4. `.agents/rules/backend.md`（后端实现，根据技术栈定制）
-5. `.agents/rules/database.md`（数据库，根据 ORM 定制）
-6. `.agents/rules/frontend-ui.md`（前端 UI，根据前端框架定制）
-7. `.agents/rules/data-permission.md`（数据权限，若需要）
-8. `.agents/rules/cache-consistency.md`（缓存一致性，若需要）
-9. `.agents/rules/dev-tooling.md`（开发工具，根据构建工具定制）
-10. `.agents/rules/testing.md`（测试验证，根据测试框架定制）
-11. `.agents/rules/workflow.md`（开发流程）
-12. `.agents/rules/documentation.md`（文档规范）
+1. `AGENTS.md`（顶层入口，全栈/仅前端/仅后端均生成）
+2. `.agents/rules/architecture.md`（架构设计，全栈/仅前端/仅后端均生成）
+3. `.agents/rules/api-contract.md`（接口契约，全栈/仅后端必生成；仅前端若有 API 调用则生成）
+4. `.agents/rules/backend.md`（后端实现，全栈/仅后端生成；仅前端跳过）
+5. `.agents/rules/database.md`（数据库，全栈/仅后端生成；仅前端跳过）
+6. `.agents/rules/frontend-ui.md`（前端 UI，全栈/仅前端生成；仅后端跳过）
+7. `.agents/rules/data-permission.md`（数据权限，全栈/仅后端若需要则生成；仅前端跳过）
+8. `.agents/rules/cache-consistency.md`（缓存一致性，全栈/仅后端若需要则生成；仅前端跳过）
+9. `.agents/rules/dev-tooling.md`（开发工具，全栈/仅前端/仅后端均生成）
+10. `.agents/rules/testing.md`（测试验证，全栈/仅前端/仅后端均生成）
+11. `.agents/rules/workflow.md`（开发流程，全栈/仅前端/仅后端均生成）
+12. `.agents/rules/documentation.md`（文档规范，全栈/仅前端/仅后端均生成）
+
+**各项目类型的生成文件清单**：
+
+| 序号 | 文件 | 全栈 | 仅前端 | 仅后端 |
+|------|------|------|--------|--------|
+| 1 | `AGENTS.md` | ✅ | ✅ | ✅ |
+| 2 | `architecture.md` | ✅ | ✅ | ✅ |
+| 3 | `api-contract.md` | ✅ | ✅（若有API调用） | ✅ |
+| 4 | `backend.md` | ✅ | ❌ | ✅ |
+| 5 | `database.md` | ✅ | ❌ | ✅ |
+| 6 | `frontend-ui.md` | ✅ | ✅ | ❌ |
+| 7 | `data-permission.md` | ✅（若需要） | ❌ | ✅（若需要） |
+| 8 | `cache-consistency.md` | ✅（若需要） | ❌ | ✅（若需要） |
+| 9 | `dev-tooling.md` | ✅ | ✅ | ✅ |
+| 10 | `testing.md` | ✅ | ✅ | ✅ |
+| 11 | `workflow.md` | ✅ | ✅ | ✅ |
+| 12 | `documentation.md` | ✅ | ✅ | ✅ |
 
 #### 4.3 规范内容生成原则
 
@@ -714,12 +877,13 @@ flowchart TD
 每个子智能体负责一个技术维度的 skills 检索，任务描述必须包含：
 
 1. **技术栈信息**：已确定的技术栈（如「NestJS+TypeORM+Vue3+Vben」）
-2. **检索目标**：从`https://www.skills.sh/`检索适合该技术栈的 AI Agent Skills
-3. **检索方式**：
+2. **项目类型**：全栈/仅前端/仅后端，根据项目类型启动对应的子智能体（如仅前端项目不启动后端和数据库维度的子智能体）
+3. **检索目标**：从`https://www.skills.sh/`检索适合该技术栈的 AI Agent Skills
+4. **检索方式**：
    - 使用`WebFetch`工具获取`https://www.skills.sh/`的 skills 排行榜
    - 使用`WebSearch`检索「site:skills.sh {技术名}」「skills.sh {技术名} skill」
    - 使用`WebFetch`获取具体 skill 页面的详细信息（用途、安装方式、适用场景）
-4. **检索范围**：检索以下类型的 skills：
+5. **检索范围**：检索以下类型的 skills：
    - 代码生成与脚手架 skills（如`frontend-design`、`prototype`）
    - 代码审查与架构优化 skills（如`improve-codebase-architecture`）
    - 测试驱动开发 skills（如`tdd`）
@@ -728,8 +892,8 @@ flowchart TD
    - 框架最佳实践 skills（如`vercel-react-best-practices`）
    - 文档处理 skills（如`lark-doc`）
    - 任务管理 skills（如`triage`、`handoff`）
-5. **输出格式**：每个 skill 必须包含：skill 名称、所属仓库（owner/repo）、安装命令、用途说明、适用场景、skills.sh 链接
-6. **数量要求**：每个维度至少推荐 3-5 个 skills
+6. **输出格式**：每个 skill 必须包含：skill 名称、所属仓库（owner/repo）、安装命令、用途说明、适用场景、skills.sh 链接
+7. **数量要求**：每个维度至少推荐 3-5 个 skills
 
 **子智能体调用示例**：
 
@@ -749,17 +913,17 @@ query: 从 https://www.skills.sh/ 检索适合 NestJS+TypeORM 后端技术栈的
 
 #### 6.2 Skills 检索维度
 
-子智能体并行从 skills.sh 检索必须覆盖以下维度：
+子智能体并行从 skills.sh 检索必须覆盖以下维度。**根据项目类型启动对应的子智能体，跳过不适用的维度**：
 
-| 检索维度 | 检索内容 | skills.sh 检索关键词示例 |
-|----------|----------|--------------------------|
-| 后端开发 skills | 代码生成、架构优化、后端最佳实践 skills | `site:skills.sh backend`、`site:skills.sh NestJS`、`site:skills.sh API` |
-| 前端开发 skills | 前端设计、组件生成、UI 最佳实践 skills | `site:skills.sh frontend`、`site:skills.sh Vue`、`site:skills.sh design` |
-| 数据库 skills | 数据库设计、ORM、查询优化 skills | `site:skills.sh database`、`site:skills.sh SQL`、`site:skills.sh ORM` |
-| 测试 skills | 测试驱动开发、E2E 测试、覆盖率 skills | `site:skills.sh tdd`、`site:skills.sh test`、`site:skills.sh e2e` |
-| 部署与工程化 skills | CI/CD、构建、容器化 skills | `site:skills.sh deploy`、`site:skills.sh Docker`、`site:skills.sh build` |
-| 代码质量 skills | 代码审查、安全审计、重构 skills | `site:skills.sh review`、`site:skills.sh refactor`、`site:skills.sh security` |
-| 文档与协作 skills | 文档生成、任务管理、协作 skills | `site:skills.sh docs`、`site:skills.sh triage`、`site:skills.sh handoff` |
+| 检索维度 | 检索内容 | 适用项目类型 | skills.sh 检索关键词示例 |
+|----------|----------|-------------|--------------------------|
+| 后端开发 skills | 代码生成、架构优化、后端最佳实践 skills | 全栈、仅后端 | `site:skills.sh backend`、`site:skills.sh NestJS`、`site:skills.sh API` |
+| 前端开发 skills | 前端设计、组件生成、UI 最佳实践 skills | 全栈、仅前端 | `site:skills.sh frontend`、`site:skills.sh Vue`、`site:skills.sh design` |
+| 数据库 skills | 数据库设计、ORM、查询优化 skills | 全栈、仅后端 | `site:skills.sh database`、`site:skills.sh SQL`、`site:skills.sh ORM` |
+| 测试 skills | 测试驱动开发、E2E 测试、覆盖率 skills | 全部类型 | `site:skills.sh tdd`、`site:skills.sh test`、`site:skills.sh e2e` |
+| 部署与工程化 skills | CI/CD、构建、容器化 skills | 全部类型 | `site:skills.sh deploy`、`site:skills.sh Docker`、`site:skills.sh build` |
+| 代码质量 skills | 代码审查、安全审计、重构 skills | 全部类型 | `site:skills.sh review`、`site:skills.sh refactor`、`site:skills.sh security` |
+| 文档与协作 skills | 文档生成、任务管理、协作 skills | 全部类型 | `site:skills.sh docs`、`site:skills.sh triage`、`site:skills.sh handoff` |
 
 #### 6.3 README.md 更新策略
 
@@ -1362,6 +1526,8 @@ project-root/
 - v1.4 更新：新增阶段一「1.0 项目技术栈预检」前置步骤，每次执行先读取项目已有技术栈（通过 Glob+Read 扫描配置文件），基于已有技术栈优化询问流程；项目为空时按完整动态流程执行
 - v1.5 更新：新增「3.7 语言规范约束」，要求所有生成的回复内容及文件必须使用中文表述，技术术语和代码标识符可保留原语言；修正 README.md 模板中的英文内容为中文
 - v1.6 更新：修正阶段六 skills 推荐来源，明确所有推荐 skills 必须来自`https://www.skills.sh/`（AI Agent Skills 生态系统），禁止推荐其他来源的工具/插件/扩展；更新检索方式为 WebFetch+WebSearch 组合检索 skills.sh；更新 README.md 模板表头为 Skill 专用格式（含所属仓库、安装命令`npx skills add owner/repo`）
+- v1.7 更新：新增阶段一「1.0 前置：项目类型确认」步骤，支持全栈/仅前端/仅后端三种项目类型；根据项目类型自动过滤预检文件清单、技术栈确认维度、规范生成范围和 skills 检索维度；仅前端项目跳过后端、数据库、缓存、数据权限相关规范；仅后端项目跳过前端 UI 相关规范
+- v1.8 更新：开源项目推荐数量从 3 个提升至至少 5 个；新增 Gitee 平台检索；用户选择参考项目后展示 GitHub/Gitee 仓库地址并询问是否拉取到本地进行深度分析；支持「拉取到本地」「WebFetch 在线分析」「不分析」三种模式；拉取失败自动降级为在线分析
 - 更新策略：当《通用项目规范体系设计指南》更新时，本技能应同步更新生成逻辑
 - 技术栈适配应通过`WebSearch`实时检索，禁止使用固定速查表
 - 框架内置组件清单应通过`WebFetch`定期从框架官方文档更新
