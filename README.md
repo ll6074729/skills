@@ -32,7 +32,7 @@
 ## 安装
 
 ```bash
-npx skill add ll6074729/skills
+npx skills add ll6074729/skills
 ```
 
 ## 使用方式
