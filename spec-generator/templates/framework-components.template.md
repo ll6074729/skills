@@ -8,10 +8,10 @@
 
 | 项目 | 内容 |
 |------|------|
-| 框架名称 | {{FRAMEWORK_NAME}}（如 vben、ant-design-pro） |
+| 框架名称 | {{FRAMEWORK_NAME}}（由 WebSearch 实时检索填充） |
 | 框架版本 | {{FRAMEWORK_VERSION}} |
 | 官方文档 URL | {{FRAMEWORK_DOC_URL}} |
-| 参考项目 | {{REFERENCE_PROJECT}}（如 ruoyi-plus-vben5） |
+| 参考项目 | {{REFERENCE_PROJECT}}（由用户选择或 WebSearch 实时检索填充） |
 | 参考项目 URL | {{REFERENCE_PROJECT_URL}} |
 | 组件清单来源 | {{COMPONENT_SOURCE}}（官方文档/参考项目/WebSearch 检索） |
 | 检索日期 | {{SEARCH_DATE}} |
@@ -20,23 +20,23 @@
 
 | 功能场景 | 必须使用的内置组件 | 配置方式 | 禁止替代方案 | 来源 |
 |----------|-------------------|----------|--------------|------|
-| 表格页面 | {{TABLE_COMPONENT}}（如`useVbenVxeGrid`）+{{PAGE_COMPONENT}}（如`Page`） | {{TABLE_CONFIG}} | 禁止自行封装表格组件 | {{SOURCE}} |
-| 表格操作列 | {{ACTION_COMPONENT}}（如`ghost-button`）+{{CONFIRM_COMPONENT}}（如`Popconfirm`） | {{ACTION_CONFIG}} | 禁止使用原生按钮 | {{SOURCE}} |
-| 下拉菜单 | {{DROPDOWN_COMPONENT}}（如`Dropdown`+`Menu`+`MenuItem`） | {{DROPDOWN_CONFIG}} | 禁止使用原生 select | {{SOURCE}} |
-| 表单 | {{FORM_COMPONENT}}（如`useVbenForm`） | {{FORM_CONFIG}} | 禁止自行封装表单组件 | {{SOURCE}} |
-| 弹窗 | {{MODAL_COMPONENT}}（如`useVbenModal`） | {{MODAL_CONFIG}} | 禁止使用原生 dialog | {{SOURCE}} |
-| 抽屉 | {{DRAWER_COMPONENT}}（如`useVbenDrawer`） | {{DRAWER_CONFIG}} | 禁止自行封装抽屉组件 | {{SOURCE}} |
-| 单选项 | {{RADIO_COMPONENT}}（如`RadioGroup`） | `optionType: 'button'`+`buttonStyle: 'solid'` | 禁止使用原生 radio | {{SOURCE}} |
-| 文件上传 | {{UPLOAD_COMPONENT}}（如`Upload.Dragger`） | {{UPLOAD_CONFIG}} | 禁止使用原生 input file | {{SOURCE}} |
-| 文件下载 | {{DOWNLOAD_METHOD}}（如`requestClient.download`） | {{DOWNLOAD_CONFIG}} | 禁止使用原生 a 标签下载 | {{SOURCE}} |
-| 图标 | {{ICON_COMPONENT}}（如`IconifyIcon`） | 图标名格式：{{ICON_FORMAT}}（如`ant-design:xxx-outlined`） | 禁止使用 SVG 直引或字体图标 | {{SOURCE}} |
+| 表格页面 | {{TABLE_COMPONENT}}（`{表格组件}`）+{{PAGE_COMPONENT}}（`{配套组件}`） | {{TABLE_CONFIG}} | 禁止自行封装表格组件 | {{SOURCE}} |
+| 表格操作列 | {{ACTION_COMPONENT}}（`{操作列组件}`）+{{CONFIRM_COMPONENT}}（`{确认组件}`） | {{ACTION_CONFIG}} | 禁止使用原生按钮 | {{SOURCE}} |
+| 下拉菜单 | {{DROPDOWN_COMPONENT}}（`{下拉菜单组件}`） | {{DROPDOWN_CONFIG}} | 禁止使用原生 select | {{SOURCE}} |
+| 表单 | {{FORM_COMPONENT}}（`{表单组件}`） | {{FORM_CONFIG}} | 禁止自行封装表单组件 | {{SOURCE}} |
+| 弹窗 | {{MODAL_COMPONENT}}（`{弹窗组件}`） | {{MODAL_CONFIG}} | 禁止使用原生 dialog | {{SOURCE}} |
+| 抽屉 | {{DRAWER_COMPONENT}}（`{抽屉组件}`） | {{DRAWER_CONFIG}} | 禁止自行封装抽屉组件 | {{SOURCE}} |
+| 单选项 | {{RADIO_COMPONENT}}（`{单选项组件}`） | `optionType: 'button'`+`buttonStyle: 'solid'` | 禁止使用原生 radio | {{SOURCE}} |
+| 文件上传 | {{UPLOAD_COMPONENT}}（`{上传组件}`） | {{UPLOAD_CONFIG}} | 禁止使用原生 input file | {{SOURCE}} |
+| 文件下载 | {{DOWNLOAD_METHOD}}（`{下载方法}`） | {{DOWNLOAD_CONFIG}} | 禁止使用原生 a 标签下载 | {{SOURCE}} |
+| 图标 | {{ICON_COMPONENT}}（`{图标组件}`） | 图标名格式：{{ICON_FORMAT}}（`{图标命名格式}`） | 禁止使用 SVG 直引或字体图标 | {{SOURCE}} |
 
 ### 1.3 目录结构约定
 
 | 目录 | 用途 | 示例 |
 |------|------|------|
-| 全局组件注册 | 全局组件注册位置 | `src/components/global/`（如`GhostButton`） |
-| 适配器层 | 适配器层目录 | `src/adapter/`（含`component`、`form`、`vxe-table`） |
+| 全局组件注册 | 全局组件注册位置 | `src/components/global/`（具体组件名由 WebSearch 检索填充） |
+| 适配器层 | 适配器层目录 | `src/adapter/`（具体子目录由 WebSearch 检索填充） |
 | 视图目录 | 页面视图文件 | `src/views/` |
 | API 目录 | API 调用文件 | `src/api/` |
 | 路由模块 | 路由配置 | `src/router/routes/modules/` |

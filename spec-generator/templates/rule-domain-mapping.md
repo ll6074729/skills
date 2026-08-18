@@ -65,14 +65,14 @@
 
 ### 2.5 frontend-ui.md 技术栈适配点
 
-| 适配项 | 通用表述 | Vue3+Vben | React+Next.js | Vue3+Element Plus |
+| 适配项 | 通用表述 | Vue3+{框架名} | React+Next.js | Vue3+Element Plus |
 |--------|----------|------------|---------------|-------------------|
-| 组件风格 | 组件库 | Vben UI 组件 | shadcn/ui | Element Plus |
+| 组件风格 | 组件库 | {框架名} UI 组件 | shadcn/ui | Element Plus |
 | 路由 | 路由模块 | Vue Router | Next.js App Router | Vue Router |
 | 状态管理 | 状态库 | Pinia | Zustand/Context | Pinia |
 | API 调用 | 适配器层 | `src/api/`+`src/adapter/` | `lib/api/` | `src/api/` |
-| 表单组件 | 表单封装 | Vben useForm | react-hook-form | ElForm |
-| 表格组件 | 表格封装 | Vben useVxeGrid | tanstack-table | ElTable |
+| 表单组件 | 表单封装 | {框架名} 表单 Hook | react-hook-form | ElForm |
+| 表格组件 | 表格封装 | {框架名} 表格 Hook | tanstack-table | ElTable |
 | 权限控制 | 权限指令 | `v-access`/`AccessControl` | `usePermission` hook | `v-permission` 指令 |
 
 ### 2.6 dev-tooling.md 技术栈适配点
@@ -141,29 +141,29 @@
 
 ## 五、框架内置组件适配点
 
-当用户采用包含内置组件库的框架（如 vben、ant-design-pro 等）时，各规则文件必须生成「框架内置组件优先使用」章节。本章节详细说明各规则域的适配点。
+当用户采用包含内置组件库的框架（如 ant-design-pro、element-plus-admin、nest-admin 等，由 WebSearch 实时检索确认）时，各规则文件必须生成「框架内置组件优先使用」章节。本章节详细说明各规则域的适配点。
 
 ### 5.1 frontend-ui.md 框架内置组件适配
 
-**必须生成的章节**：「组件使用要求」（参考 [frontend-ui.md](file:///../../../../.agents/rules/frontend-ui.md) 模式）
+**必须生成的章节**：「组件使用要求」（参考本项目 templates/framework-components.template.md 模式）
 
-**适配内容清单**：
+**适配内容清单**（示例组件名均通过 WebSearch 实时检索填充，下表中「`{框架名}`」由用户在阶段一确认的框架名替换）：
 
-| 适配项 | 说明 | vben 框架示例 |
-|--------|------|---------------|
-| 表格组件 | 列出框架内置表格组件和配套组件 | `useVbenVxeGrid`+`Page` |
-| 表单组件 | 列出框架内置表单组件 | `useVbenForm` |
-| 弹窗组件 | 列出框架内置弹窗组件 | `useVbenModal` |
-| 抽屉组件 | 列出框架内置抽屉组件 | `useVbenDrawer` |
-| 操作列组件 | 列出操作列的标准组件组合 | `ghost-button`+`Popconfirm` |
-| 下拉菜单 | 列出操作列下拉菜单组件 | `Dropdown`+`Menu`+`MenuItem` |
-| 上传组件 | 列出文件上传组件 | `Upload.Dragger` |
-| 下载方法 | 列出文件下载方法 | `requestClient.download` |
-| 图标组件 | 列出图标组件和命名格式 | `IconifyIcon`+`ant-design:xxx-outlined` |
+| 适配项 | 说明 | 适配方式 |
+|--------|------|----------|
+| 表格组件 | 列出框架内置表格组件和配套组件 | `{表格组件}`+`{配套组件}` |
+| 表单组件 | 列出框架内置表单组件 | `{表单组件}` |
+| 弹窗组件 | 列出框架内置弹窗组件 | `{弹窗组件}` |
+| 抽屉组件 | 列出框架内置抽屉组件 | `{抽屉组件}` |
+| 操作列组件 | 列出操作列的标准组件组合 | `{操作列组件}`+`{确认组件}` |
+| 下拉菜单 | 列出操作列下拉菜单组件 | `{下拉菜单组件}` |
+| 上传组件 | 列出文件上传组件 | `{上传组件}` |
+| 下载方法 | 列出文件下载方法 | `{下载方法}` |
+| 图标组件 | 列出图标组件和命名格式 | `{图标组件}`+`{图标命名格式}` |
 | 单选项配置 | 列出 RadioGroup 标准配置 | `optionType: 'button'`+`buttonStyle: 'solid'` |
-| 全局组件位置 | 指定全局组件注册目录 | `src/components/global/` |
-| 适配器层目录 | 指定适配器层目录结构 | `src/adapter/`（含`component`、`form`、`vxe-table`） |
-| 参考项目 | 指定参考项目以保持一致性 | `ruoyi-plus-vben5` |
+| 全局组件位置 | 指定全局组件注册目录 | 由 WebSearch 检索填充 |
+| 适配器层目录 | 指定适配器层目录结构 | 由 WebSearch 检索填充 |
+| 参考项目 | 指定参考项目以保持一致性 | 由用户选择或 WebSearch 检索填充 |
 
 **生成模板**：
 
