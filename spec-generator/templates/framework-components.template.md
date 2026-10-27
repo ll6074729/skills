@@ -1,6 +1,6 @@
 # 框架内置组件清单模板
 
-本模板用于记录项目所采用框架的内置组件清单，作为规范生成时「框架内置组件优先使用」规则的数据来源。
+本模板是可选章节素材，不是所有项目都要填完的表单。先按项目类型、实际框架 / ORM / 测试 / 构建工具选择适用的部分；只为项目已有或用户确认计划采用的功能场景列组件，不得借模板推动项目新增无关功能。禁止为仅前端项目填后端和 ORM 章节，为仅后端项目填前端组件章节，或为不存在的测试框架伪造清单。检索不到或项目未采用相应能力时，跳过该部分并说明适用性。
 
 ## 一、前端框架内置组件清单
 
@@ -8,12 +8,12 @@
 
 | 项目 | 内容 |
 |------|------|
-| 框架名称 | {{FRAMEWORK_NAME}}（由 WebSearch 实时检索填充） |
+| 框架名称 | {{FRAMEWORK_NAME}}（优先由 Context7 官方文档确认；按工具开关降级检索） |
 | 框架版本 | {{FRAMEWORK_VERSION}} |
 | 官方文档 URL | {{FRAMEWORK_DOC_URL}} |
-| 参考项目 | {{REFERENCE_PROJECT}}（由用户选择或 WebSearch 实时检索填充） |
+| 参考项目 | {{REFERENCE_PROJECT}}（由用户选择或按阶段二检索流程确认） |
 | 参考项目 URL | {{REFERENCE_PROJECT_URL}} |
-| 组件清单来源 | {{COMPONENT_SOURCE}}（官方文档/参考项目/WebSearch 检索） |
+| 组件清单来源 | {{COMPONENT_SOURCE}}（官方文档/参考项目/动态检索来源） |
 | 检索日期 | {{SEARCH_DATE}} |
 
 ### 1.2 组件使用清单
@@ -26,7 +26,7 @@
 | 表单 | {{FORM_COMPONENT}}（`{表单组件}`） | {{FORM_CONFIG}} | 禁止自行封装表单组件 | {{SOURCE}} |
 | 弹窗 | {{MODAL_COMPONENT}}（`{弹窗组件}`） | {{MODAL_CONFIG}} | 禁止使用原生 dialog | {{SOURCE}} |
 | 抽屉 | {{DRAWER_COMPONENT}}（`{抽屉组件}`） | {{DRAWER_CONFIG}} | 禁止自行封装抽屉组件 | {{SOURCE}} |
-| 单选项 | {{RADIO_COMPONENT}}（`{单选项组件}`） | `optionType: 'button'`+`buttonStyle: 'solid'` | 禁止使用原生 radio | {{SOURCE}} |
+| 单选项 | {{RADIO_COMPONENT}}（`{单选项组件}`） | {{RADIO_CONFIG}}（按实际框架文档填写；无对应组件时删除本行） | {{RADIO_ALTERNATIVE_RULE}} | {{SOURCE}} |
 | 文件上传 | {{UPLOAD_COMPONENT}}（`{上传组件}`） | {{UPLOAD_CONFIG}} | 禁止使用原生 input file | {{SOURCE}} |
 | 文件下载 | {{DOWNLOAD_METHOD}}（`{下载方法}`） | {{DOWNLOAD_CONFIG}} | 禁止使用原生 a 标签下载 | {{SOURCE}} |
 | 图标 | {{ICON_COMPONENT}}（`{图标组件}`） | 图标名格式：{{ICON_FORMAT}}（`{图标命名格式}`） | 禁止使用 SVG 直引或字体图标 | {{SOURCE}} |
@@ -35,8 +35,8 @@
 
 | 目录 | 用途 | 示例 |
 |------|------|------|
-| 全局组件注册 | 全局组件注册位置 | `src/components/global/`（具体组件名由 WebSearch 检索填充） |
-| 适配器层 | 适配器层目录 | `src/adapter/`（具体子目录由 WebSearch 检索填充） |
+| 全局组件注册 | 全局组件注册位置 | {{GLOBAL_COMPONENT_DIRECTORY}}（按项目事实与官方文档填写） |
+| 适配器层 | 适配器层目录 | {{ADAPTER_DIRECTORY}}（按项目事实与官方文档填写） |
 | 视图目录 | 页面视图文件 | `src/views/` |
 | API 目录 | API 调用文件 | `src/api/` |
 | 路由模块 | 路由配置 | `src/router/routes/modules/` |
@@ -144,7 +144,7 @@
 ### 6.1 填写规则
 
 1. 所有占位符`{{XXX}}`必须替换为实际内容
-2. 来源字段必须标注：官方文档、参考项目、WebSearch 检索结果
+2. 来源字段必须标注：官方文档（优先 Context7）、参考项目或实际使用的降级检索来源
 3. 禁止替代方案列禁止留空，必须明确禁止的方式
 4. 若某项无法获取，填写`待补充`并在交付时汇总
 
@@ -152,4 +152,4 @@
 
 - 框架升级时，必须重新验证组件清单的准确性
 - 新增框架组件时，必须同步更新本清单
-- 定期通过 WebSearch 检索框架最新文档，验证清单时效性
+- 框架升级时按阶段二检索流程核验官方文档，验证清单时效性

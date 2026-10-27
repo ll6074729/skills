@@ -1,0 +1,20 @@
+{
+  "$comment": "MCP 接入参考结构：Context7 提供版本化官方文档，CodeGraph 提供本地代码图。各宿主的配置格式、认证变量和配置路径可能不同；按用户选中工具的官方文档适配，不要直接跨工具复制。",
+  "mcpServers": {
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
+      }
+    },
+    "codegraph": {
+      "type": "stdio",
+      "command": "codegraph",
+      "args": [
+        "serve",
+        "--mcp"
+      ]
+    }
+  }
+}

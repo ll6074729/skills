@@ -1,33 +1,37 @@
 # spec-generator（项目规范体系生成器）
 
-一个面向 AI Agent 的技能（Skill），为任意技术栈的全栈项目生成一套完整、专业且针对性强的规范文档体系。
+面向 AI Agent 的技能：为任意技术栈的全栈项目生成 `AGENTS.md` 与 `.agents/rules/` 规范体系。
 
-## 简介
+基于《通用项目规范体系设计指南》五大支柱（AI 原生、SSOT 驱动、门禁强制、性能先行、防御设计），**不预设固定技术选项**，通过「项目预检 → 实时检索 → 用户确认」动态确定技术栈。
 
-`spec-generator` 基于《通用项目规范体系设计指南》的五大支柱思想框架（AI 原生、SSOT 驱动、门禁强制、性能先行、防御设计），为你的项目自动生成 `AGENTS.md` 顶层入口和 `.agents/rules/` 下的领域规则文件。
+## 设计要点
 
-**核心设计理念**：本技能不采用固定方法的直接植入，而是通过对核心思想的理解与应用，通过动态学习与用户沟通构建解决方案框架。特别针对后端等可能存在知识盲区的领域，建立动态学习和信息检索机制，确保规范生成的适应性和时效性。
+- **渐进披露**：`SKILL.md` 只保留流程、铁律与工具契约；阶段细则放在 `references/`，按任务意图加载，避免每次执行都吞下全部上下文。
+- **Context7 取文档**：版本化官方文档替代整页 `WebFetch`，按主题窄查询并即时压缩。
+- **CodeGraph 取结构**：本地代码图回答「某能力如何实现、调用链如何走」，替代 clone 参考项目后通读源码。
+- **可校验**：内置功能等价性校验脚本，改动后可复测原有约束是否仍然成立。
 
 ## 核心特性
 
-- **动态技术栈确认**：通过「项目预检 → 实时网络检索 → 动态生成选项 → 用户确认」的循环与用户共同确定适用技术，不预设固定选项
-- **实时检索最佳实践**：所有技术推荐基于当前年份的网络检索结果，禁止使用过时信息
-- **开源项目推荐**：技术栈确定后检索并推荐相关高质量开源项目作为参考
-- **框架内置组件适配**：支持根据 vben、ant-design-pro 等包含内置组件库的框架生成「框架内置组件优先使用」规则
-- **Skills 生态推荐**：规范生成完成后，从 [skills.sh](https://www.skills.sh/) 检索适合项目技术栈的 AI Agent Skills 并更新到 README
-- **六阶段执行流程**：动态技术栈确认 → 深度检索最佳实践 → 确认规范范围 → 生成规范文档 → 自检与交付 → 推荐 Skills 并更新 README
-- **中文输出**：所有生成的回复内容及文件使用中文表述，技术术语和代码标识符保留原语言
+- 七阶段流程：意图与工具开关确认 → 技术栈确认 → 深度检索 → 范围确认 → 生成 → 自检交付 → Skills 推荐
+- 工具可选：Context7、CodeGraph、子代理并行由用户勾选，关闭后按原流程（WebSearch + Glob/Read）执行
+- AI 开发工作流（可选）：探测本机已装开发工具、提示依赖与安装 token 成本、支持新老项目；规范以该工作流为基础生成或回改，产出 `.ai-workflow/` 门禁、总控 Skill 与项目使用教程
+- 项目类型自适应：全栈 / 仅前端 / 仅后端，自动裁剪预检文件、规则域与检索维度
+- 开源项目推荐：至少 5 个同栈项目，覆盖 GitHub 与 Gitee，可选本地克隆并由 CodeGraph 分析
+- 框架内置组件优先：前端组件、后端能力、ORM 功能、测试工具四类规则
+- 安全与部署运维：`security.md`、`devops.md` 覆盖认证授权、数据安全、API 安全、审计、发布回滚与可观测性
+- 公共模块抽离：同构流程 ≥2 处且差异仅为配置值时必须抽离，调用点只传配置
+- 本地技能集成：解析本地 `SKILL.md` 作为参考素材注入，保留来源标注
+- Skills 推荐：从 [skills.sh](https://www.skills.sh/) 并行检索并更新 README
+- 中文输出：术语与代码标识符保留原语言
 
 ## 触发场景
 
-以下任一场景可触发本技能：
-
-- 用户要求生成项目规范、规范体系、规范文档
-- 用户要求创建 `AGENTS.md` 或 `.agents/rules/` 规则文件
-- 用户要求为新项目或现有项目搭建标准化规范
-- 用户要求基于《通用项目规范体系设计指南》生成规范
-- 用户要求为特定技术栈定制规范文档
-- 用户要求整合技术最佳实践与项目规范
+- 生成项目规范、规范体系、规范文档
+- 创建 `AGENTS.md` 或 `.agents/rules/` 规则文件
+- 为新项目或现有项目搭建、优化标准化规范
+- 基于《通用项目规范体系设计指南》生成规范
+- 为特定技术栈定制规范文档
 
 ## 安装
 
@@ -37,69 +41,96 @@ npx skills add ll6074729/skills
 
 ## 使用方式
 
-安装后，在你的项目中直接对 AI Agent 描述需求即可触发本技能，例如：
+安装后直接向 Agent 描述需求即可触发，例如：
 
 ```
 为新项目生成规范体系
 为我们的 NestJS + Vue3 + TypeORM 项目搭建标准化规范
-基于《通用项目规范体系设计指南》生成 AGENTS.md 和规则文件
+优化现有规范，补齐数据库与测试规则
+启用 AI 开发工作流，先探测本机装了哪些开发工具
 ```
-
-技能将按六阶段流程执行：动态确认技术栈 → 检索最佳实践 → 确认输出范围 → 生成规范文档 → 自检交付 → 推荐 Skills。
 
 ## 输出文件结构
 
-执行完成后，将生成以下文件结构（根据用户选择的规则域调整）：
-
 ```
 project-root/
-├── AGENTS.md                          # 顶层规范入口
-├── README.md                          # 项目说明（含推荐 Skills 章节）
+├── AGENTS.md
+├── README.md                     # 追加「推荐 Skills」章节
+├── README.zh-CN.md               # 存在则同步
 └── .agents/
     └── rules/
-        ├── architecture.md            # 架构设计规则
-        ├── api-contract.md            # 接口契约规则
-        ├── backend.md                 # 后端实现规则
-        ├── database.md                # 数据库规则
-        ├── frontend-ui.md             # 前端 UI 规则
-        ├── data-permission.md         # 数据权限规则（可选）
-        ├── cache-consistency.md       # 缓存一致性规则（可选）
-        ├── dev-tooling.md             # 开发工具规则
-        ├── testing.md                 # 测试验证规则
-        ├── workflow.md                # 开发流程规则
-        └── documentation.md          # 文档规范规则
+        ├── architecture.md
+        ├── api-contract.md
+        ├── backend.md
+        ├── database.md
+        ├── frontend-ui.md
+        ├── data-permission.md
+        ├── cache-consistency.md
+        ├── dev-tooling.md
+        ├── testing.md
+        ├── devops.md
+        ├── security.md
+        ├── workflow.md
+        └── documentation.md
+
+# 启用 AI 开发工作流时追加：
+docs/ai-workflow-guide.md
+.ai-workflow/
+├── required-checks.md
+├── workflow-state.md
+└── skills/ai-dev-workflow/SKILL.md
+```
+
+## 校验
+
+```bash
+cd spec-generator
+node scripts/verify-parity.mjs        # 功能等价性检查
+node scripts/verify-parity.mjs --json # 机器可读输出
 ```
 
 ## 技能依赖
 
-本技能执行依赖以下工具：
-
-- `Glob` / `LS` / `Read`：项目技术栈预检
-- `AskUserQuestion`：动态询问用户技术栈与规范范围
-- `WebSearch`：检索各技术最新最佳实践
-- `WebFetch`：获取框架官方文档内容
-- `Write` / `Edit`：生成规范文档与更新 README
-- `Task`：启动子智能体并行检索 skills.sh
+- `Glob` / `LS` / `Read` / `Write` / `Edit`：预检、读取指南、生成与更新文件
+- `AskUserQuestion`：意图、技术栈、规范范围确认
+- `WebSearch` / `WebFetch`：Context7 未覆盖时的检索与单页补充
+- `Task`：阶段六并行检索 skills.sh
+- MCP `context7`：版本化官方文档（配置见 `integrations/mcp.json`）
+- MCP / CLI `codegraph`：本地代码图分析（`@colbymchenry/codegraph`）
 
 ## 项目结构
 
 ```
 skills/
-├── README.md                                    # 本文件
+├── README.md
 └── spec-generator/
-    ├── SKILL.md                                 # 技能入口与执行流程定义
-    └── templates/                               # 规范生成模板
-        ├── AGENTS.template.md                   # AGENTS.md 顶层模板
-        ├── rule-file.template.md                # 规则文件通用模板
-        ├── framework-components.template.md     # 框架内置组件清单模板
-        ├── rule-domain-mapping.md               # 规则域映射
-        └── checklist.md                         # 自检清单
+    ├── SKILL.md                         # 主入口：流程、铁律、工具契约
+    ├── WORKFLOW-GUIDE.md                # 可选「AI 开发工作流」使用教程
+    ├── references/
+    │   ├── 01-intake.md                 # 阶段零：意图与工具开关
+    │   ├── 02-stack.md                  # 阶段一：预检与技术栈确认
+    │   ├── 03-research.md               # 阶段二：Context7 / CodeGraph 检索
+    │   ├── 04-generate-deliver.md       # 阶段三至六：范围、生成、交付、Skills
+    │   └── 05-workflow-mode.md          # 阶段 3.5：AI 开发工作流（可选）
+    ├── templates/
+    │   ├── AGENTS.template.md
+    │   ├── rule-file.template.md
+    │   ├── rule-domain-mapping.md
+    │   ├── framework-components.template.md
+    │   └── checklist.md
+    ├── integrations/
+    │   └── mcp.json                     # Context7 + CodeGraph MCP 配置
+    ├── scripts/
+    │   ├── codegraph.mjs                # CodeGraph CLI 封装与降级
+    │   ├── detect-agents.mjs            # 探测本机已装开发工具与当前会话
+    │   └── verify-parity.mjs            # 功能等价性验证
 ```
 
 ## 版本
 
-- 当前版本：v1.6
-- 更新策略：当《通用项目规范体系设计指南》更新时同步更新生成逻辑；技术栈适配通过实时检索，不使用固定速查表
+- 当前版本：v2.1（新增可选 AI 开发工作流与开发工具探测）
+- v2.0：渐进披露 + Context7 / CodeGraph 接入
+- 更新策略：指南更新时同步生成逻辑；技术信息一律实时检索，不使用固定速查表
 
 ## 许可证
 
